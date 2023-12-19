@@ -3,8 +3,12 @@ package ua.Hillel.Homework17;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import java.time.Duration;
+import java.util.NoSuchElementException;
 
 public class WebDriverHomework {
     private static WebDriver driver;
@@ -24,6 +28,12 @@ public class WebDriverHomework {
     @Test
     public void loginToSystem() throws InterruptedException {
 
+        FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(15))
+                .pollingEvery(Duration.ofSeconds(2))
+                .ignoring(NoSuchElementException.class)
+                .ignoring(StaleElementReferenceException.class);
+
         WebElement inputLoginField = driver.findElement(By.id("user-name"));
         inputLoginField.sendKeys("standard_user");
 
@@ -37,16 +47,7 @@ public class WebDriverHomework {
 
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", linkedinElement);
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Thread.sleep(1000);
-
         linkedinElement.click();
-
-        Thread.sleep(1000);
 
         // Отримання ідентифікаторів відкритих вкладок
         String currentWindowHandle = driver.getWindowHandle();
@@ -57,10 +58,7 @@ public class WebDriverHomework {
 
                 // Отримання заголовка нової вкладки
                 String linkedInTitle = driver.getTitle();
-
-                System.out.println("LinkedIn Title: " + linkedInTitle);
-
-                 Assert.assertEquals("Sauce Labs | LinkedIn", linkedInTitle);
+                Assert.assertEquals("Sauce Labs | LinkedIn", linkedInTitle);
                 // Закриття нової вкладки
                 driver.close();
             }
@@ -72,12 +70,9 @@ public class WebDriverHomework {
         WebElement menuButton = driver.findElement(By.id("react-burger-menu-btn"));
         menuButton.click();
 
-        Thread.sleep(1000);
-
-        WebElement logout = driver.findElement(By.id("logout_sidebar_link"));
+        WebElement logout = fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("logout_sidebar_link")));
         logout.click();
 
-        Thread.sleep(1000);
 
         //Перевірки, щоб впевнитися що ми на сторінці Логіну
         WebElement usernameField = driver.findElement(By.id("user-name"));
