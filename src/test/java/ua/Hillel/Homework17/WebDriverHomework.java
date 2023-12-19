@@ -6,7 +6,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
-
 public class WebDriverHomework {
     private static WebDriver driver;
 
@@ -92,5 +91,3 @@ public class WebDriverHomework {
 
     }
 }
-
-
