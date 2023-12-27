@@ -1,47 +1,42 @@
 package ua.Hillel.Homework17;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.FluentWait;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import java.time.Duration;
-import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 public class WebDriverHomework {
-    private static WebDriver driver;
+    private WebDriver driver;
+    private LoginPage loginPage;
+    private MenuPage menuPage;
 
     @BeforeClass
     static void setUp() {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-        driver.get("https://www.saucedemo.com/");
     }
 
-    @AfterClass
-    static void tearDown() {
+    @BeforeMethod
+    void initialize() {
+        driver = new ChromeDriver();
+        driver.get("https://www.saucedemo.com/");
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        loginPage = new LoginPage(driver);
+        menuPage = new MenuPage(driver);
+    }
+
+    @AfterMethod
+    void tearDown() {
         driver.quit();
     }
 
     @Test
-    public void loginToSystem() throws InterruptedException {
-
-        FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
-                .withTimeout(Duration.ofSeconds(15))
-                .pollingEvery(Duration.ofSeconds(2))
-                .ignoring(NoSuchElementException.class)
-                .ignoring(StaleElementReferenceException.class);
-
-        WebElement inputLoginField = driver.findElement(By.id("user-name"));
-        inputLoginField.sendKeys("standard_user");
-
-        WebElement inputPassField = driver.findElement(By.name("password"));
-        inputPassField.sendKeys("secret_sauce");
-
-        WebElement loginButton = driver.findElement(By.id("login-button"));
-        loginButton.click();
+    public void loginAndLogout() {
+        loginPage.login("standard_user", "secret_sauce");
 
         WebElement linkedinElement = driver.findElement(By.className("social_linkedin"));
 
@@ -64,25 +59,17 @@ public class WebDriverHomework {
             }
         }
 
-        // Переключення назад на вихідну вкладку
-        driver.switchTo().window(currentWindowHandle);
 
-        WebElement menuButton = driver.findElement(By.id("react-burger-menu-btn"));
-        menuButton.click();
-
-        WebElement logout = fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("logout_sidebar_link")));
-        logout.click();
-
+        menuPage.openMenu();
+        menuPage.logout();
 
         //Перевірки, щоб впевнитися що ми на сторінці Логіну
         WebElement usernameField = driver.findElement(By.id("user-name"));
         Assert.assertNotNull("Поле вводу для логіну не знайдено", String.valueOf(usernameField));
 
         WebElement inputPass = driver.findElement(By.name("password"));
-        Assert.assertNotNull("Поле вводу для пароля не знайдено", String.valueOf(inputPassField));
 
         WebElement loginButton2 = driver.findElement(By.id("login-button"));
-        Assert.assertNotNull("Кнопка логіну не знайдена", String.valueOf(loginButton));
-
+        Assert.assertTrue(driver.getCurrentUrl().contains("saucedemo.com"));
     }
 }
